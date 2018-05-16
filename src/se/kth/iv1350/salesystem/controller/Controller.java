@@ -1,17 +1,23 @@
 package se.kth.iv1350.salesystem.controller;
 
 import se.kth.iv1350.salesystem.integration.AccountingSystem;
+import se.kth.iv1350.salesystem.integration.DBConnectionException;
 import se.kth.iv1350.salesystem.integration.InventorySystem;
+import se.kth.iv1350.salesystem.integration.ItemNotFoundException;
 import se.kth.iv1350.salesystem.model.Amount;
+import se.kth.iv1350.salesystem.model.ItemDTO;
 import se.kth.iv1350.salesystem.model.Quantity;
 import se.kth.iv1350.salesystem.model.Sale;
 import se.kth.iv1350.salesystem.model.SaleDTO;
+import se.kth.iv1350.salesystem.model.TotalRevenue;
+import se.kth.iv1350.salesystem.model.TotalRevenueObserver;
 
 public class Controller {
 	
 	AccountingSystem accountingSystem;
 	InventorySystem inventorySystem;
 	Sale sale;
+	TotalRevenue totalRevenue = TotalRevenue.getInstance();
 	
 	/**
 	 * Creates a new instance of controller and the external systems.
@@ -19,6 +25,14 @@ public class Controller {
 	public Controller() {
 		this.accountingSystem = new AccountingSystem();
 		this.inventorySystem = new InventorySystem();
+	}
+	
+	/**
+	 * Add an observer that wants information about the total revenue.
+	 * @param observer The observer to be added.
+	 */
+	public void addTotalRevenueObserver(TotalRevenueObserver observer) {
+		totalRevenue.addTotalRevenueObserver(observer);
 	}
 	
 	/**
@@ -42,7 +56,7 @@ public class Controller {
 	 * @param quantity the <code>Quantity</code> of the item.
 	 * @return the current sale.
 	 */
-	public SaleDTO addItem(int itemID, int quantity) {
+	public SaleDTO addItem(int itemID, int quantity) throws ItemNotFoundException{
 		sale.addItem(inventorySystem.getItem(itemID), new Quantity(quantity));
 		return new SaleDTO(sale);
 	}
@@ -66,7 +80,16 @@ public class Controller {
 	}
 	
 	/**
-	 * Indicates that all items have been registered.
+	 * Show the total revenue since the program started.
 	 */
-	public void allItemsRegistered() {}
+	public void showUpdatedTotalRevenue() {
+		totalRevenue.updateTotalRevenue(sale.getTotal());
+	}
+	
+	/**
+	 * Indicates that all items have been registered and updates the total revenue.
+	 */
+	public void allItemsRegistered() {
+		showUpdatedTotalRevenue();
+	}
 }

@@ -27,16 +27,12 @@ public class InventorySystem {
 	 * Checks if an item with the given ID is existing in the inventory.
 	 * @param itemID the ID of the  {@link ItemDTO} to check existence of
 	 * @return boolean
+	 * @throws ItemNotFoundException
 	 */
 	public boolean itemExists(int itemID) {
-		try {
-			if(items.contains(new ItemDTO(itemID))){
-				return true;
-			} 
-			return false;
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if(items.contains(new ItemDTO(itemID))){
+			return true;
+		}else {
 			return false;
 		}
 	}
@@ -44,13 +40,19 @@ public class InventorySystem {
 	/**
 	 * Returns an item if it exists in the inventory.
 	 * @param itemID the ID of the item to retrieve
-	 * @return {@link ItemDTO}
+	 * @return <code>ItemDTO</code> The item that is collected from the item registry.
+	 * @throws ItemNotFoundException 
 	 */
-	public ItemDTO getItem(int itemID) {
-		if(itemExists(itemID)) {
-			return items.get(items.indexOf(new ItemDTO(itemID)));
+	public ItemDTO getItem(int itemID) throws ItemNotFoundException, DBConnectionException {
+		if(new ItemDTO(itemID).equals(new ItemDTO(999))) {
+			throw new DBConnectionException();
+		}else {
+			if(itemExists(itemID)) {
+				return items.get(items.indexOf(new ItemDTO(itemID)));
+			}else {
+				throw new ItemNotFoundException(new ItemDTO(itemID));
+			}
 		}
-		return null;
 	}
 	
 	/**
